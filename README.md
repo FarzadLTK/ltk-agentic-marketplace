@@ -6,7 +6,7 @@ NOTES!
 1. Everything is fake intentionally for this prototype : creators, content, clicks, orders, dollars. There is no backend, no network call, no login. Open `index.html` in a browser.
 2. This is buildable with real data.
    
-Jump to prototype: https://drive.google.com/file/d/1uE41YP_lpai7v050WhG0hr_QZyDMHHzH/view?usp=sharing
+Jump to prototype by downloading this and opening with your browser: https://drive.google.com/file/d/1uE41YP_lpai7v050WhG0hr_QZyDMHHzH/view?usp=sharing
 ![Negotiation and settlement](docs/screenshots/negotiation-settlement.png)
 
 ## The idea in one paragraph
