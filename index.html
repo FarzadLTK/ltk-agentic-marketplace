@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LTK Agent Market — Brand Console (simulated prototype)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#0b0f17;--panel:#121826;--panel2:#182033;--line:#263249;--text:#e8edf7;--muted:#8d99b2;
+  --accent:#7c9cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--brand:#c084fc;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.45}
+a{color:var(--accent)}
+header{position:sticky;top:0;z-index:20;background:rgba(11,15,23,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 22px;display:flex;align-items:center;gap:14px}
+.logo{font-weight:800;letter-spacing:.5px;font-size:16px}
+.logo span{color:var(--accent);font-weight:600}
+.crumb{color:var(--muted)}
+.spacer{flex:1}
+.sim{font-size:11px;color:var(--warn);border:1px solid rgba(251,191,36,.4);padding:2px 8px;border-radius:999px}
+button,select,input,textarea{font:inherit;color:var(--text)}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:#0b0f17;border-color:var(--accent);font-weight:700}
+button.ghost{background:transparent}
+button:disabled{opacity:.45;cursor:not-allowed}
+select{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.toggle{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.toggle button{border:0;border-radius:0;background:transparent}
+.toggle button.on{background:var(--panel2);color:var(--accent);font-weight:700}
+main{max-width:1240px;margin:0 auto;padding:22px}
+.step{margin-bottom:28px;opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+.step.show{opacity:1;transform:none}
+.step.hidden{display:none}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);display:flex;align-items:center;gap:10px;margin:0 0 12px}
+h2 .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-size:12px}
+h2 .status{margin-left:auto;font-size:12px;text-transform:none;letter-spacing:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media (max-width:980px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+label{display:block;color:var(--muted);font-size:12px;margin:10px 0 4px}
+input[type=number],textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+textarea{min-height:84px;resize:vertical}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-size:12px}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:4px 10px;font-size:13px}
+.kv b{color:var(--muted);font-weight:500}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;border:1px solid var(--line);background:var(--panel2);margin-right:4px}
+.pill.ok{color:var(--ok);border-color:rgba(52,211,153,.4)}
+.pill.warn{color:var(--warn);border-color:rgba(251,191,36,.4)}
+.pill.bad{color:var(--bad);border-color:rgba(248,113,113,.4)}
+.pill.brand{color:var(--brand);border-color:rgba(192,132,252,.4)}
+.avatar{width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;font-weight:800;color:#0b0f17;font-size:13px}
+.creator-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.creator-head .h{font-weight:700}
+.creator-head .s{color:var(--muted);font-size:12px}
+.bar{height:6px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%}
+.stat{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px}
+.stat b{color:var(--text);font-weight:600}
+.thread{display:flex;flex-direction:column;gap:8px;min-height:120px}
+.msg{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--panel2);font-size:13px}
+.msg .who{font-size:11px;color:var(--muted);margin-bottom:4px;display:flex;gap:8px;align-items:center}
+.msg .who b{color:var(--text)}
+.msg.brand{border-left:3px solid var(--brand)}
+.msg.creator{border-left:3px solid var(--ok)}
+.msg.ref{border-left:3px solid var(--warn);background:rgba(251,191,36,.06)}
+.msg.ref.block{border-left-color:var(--bad);background:rgba(248,113,113,.07)}
+.msg.deal{border-left:3px solid var(--accent);background:rgba(124,156,255,.08)}
+.offer{font-family:var(--mono);font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin-top:6px;white-space:pre-wrap;color:#c8d2e8}
+.items{list-style:none;padding:0;margin:6px 0 0;font-size:12.5px}
+.items li{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dashed var(--line)}
+.items li:last-child{border-bottom:0}
+.tag{font-size:10.5px;padding:0 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+.tag.bank{color:var(--ok);border-color:rgba(52,211,153,.4)}
+.tag.new{color:var(--warn);border-color:rgba(251,191,36,.4)}
+.big{font-size:22px;font-weight:800}
+.num{font-variant-numeric:tabular-nums}
+.ledger-wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+@media (max-width:980px){.ledger-wrap{grid-template-columns:1fr}}
+.feed{max-height:330px;overflow:auto;font-family:var(--mono);font-size:11.5px;display:flex;flex-direction:column;gap:3px}
+.feed div{padding:3px 6px;border-radius:4px;background:var(--bg);border:1px solid var(--line)}
+.feed .c{color:var(--ok)}
+.feed .f{color:var(--brand)}
+.feed .a{color:var(--muted)}
+.timeline{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:8px}
+.day{height:34px;border:1px solid var(--line);border-radius:6px;background:var(--bg);position:relative;font-size:10px;color:var(--muted);padding:2px 4px}
+.day .dot{position:absolute;bottom:4px;left:4px;right:4px;height:6px;border-radius:3px}
+.human{border:1px dashed var(--warn);border-radius:10px;padding:10px;background:rgba(251,191,36,.05);margin-top:8px;font-size:12.5px}
+.human .ev{font-family:var(--mono);font-size:11.5px;color:#c8d2e8;margin-top:4px}
+.human .resp{margin-top:6px;font-weight:600}
+.totals{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.totals .card{padding:10px 12px}
+.totals .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+footer{color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:14px;margin-top:30px}
+footer ul{margin:6px 0 0 16px;padding:0}
+/* creator view */
+#creatorView{max-width:1240px;margin:0 auto;padding:22px;display:grid;grid-template-columns:360px 1fr;gap:22px}
+#creatorView.hidden{display:none}
+.phone{width:340px;height:680px;border-radius:38px;border:8px solid #1c2538;background:#05070c;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.phone .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#1c2538;border-radius:0 0 16px 16px}
+.phone .screen{position:absolute;inset:0;padding:40px 12px 12px;overflow:auto}
+.phone .time{text-align:center;color:#fff;font-size:34px;font-weight:300;margin:6px 0 2px}
+.phone .date{text-align:center;color:#aab;font-size:12px;margin-bottom:12px}
+.notif{background:rgba(255,255,255,.1);backdrop-filter:blur(6px);border-radius:14px;padding:9px 11px;margin-bottom:8px;color:#fff;font-size:12.5px;animation:pop .3s ease}
+.notif .app{font-size:10.5px;color:#cfd6e6;display:flex;justify-content:space-between;margin-bottom:2px}
+.notif .app b{color:#fff}
+.notif .btns{display:flex;gap:6px;margin-top:6px}
+.notif .btns span{flex:1;text-align:center;background:rgba(255,255,255,.14);border-radius:8px;padding:4px;font-size:11.5px}
+.notif .btns span.y{background:rgba(52,211,153,.35)}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.cv-side .card{margin-bottom:14px}
+.earn{display:flex;justify-content:space-between;align-items:baseline}
+.earn .big{color:var(--ok)}
+.walk{opacity:.55}
+.flash{animation:flash .6s ease}
+@keyframes flash{0%{background:rgba(52,211,153,.25)}100%{background:transparent}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">LTK <span>Agent Market</span></div>
+  <div class="crumb" id="crumb">Brand console · Marlowe Boot Co.</div>
+  <span class="sim">SIMULATED — all data, agents, money fake</span>
+  <div class="spacer"></div>
+  <div class="toggle"><button id="vBrand" class="on">Brand view</button><button id="vCreator">Creator view</button></div>
+  <select id="speed" title="Simulation speed">
+    <option value="1">Normal speed</option>
+    <option value="0.35">Fast</option>
+    <option value="0">Instant</option>
+  </select>
+  <button id="reset" class="ghost">Reset</button>
+</header>
+
+<main id="brandView">
+  <section id="s1" class="step show">
+    <h2><span class="n">1</span> Mandate <span class="status muted" id="st1">Brand agent idle</span></h2>
+    <div class="grid2">
+      <div class="card">
+        <label>Budget (USD)</label>
+        <input id="budget" type="number" value="1000" min="200" step="50">
+        <label>Brief (natural language)</label>
+        <textarea id="brief">Fall boots push for the Marlowe Chelsea line. Women 25–40. Prefer creators who have already sold Marlowe. Mix of Instagram and TikTok, at least one reel. Everything live within 10 days.</textarea>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <button id="deploy" class="primary">Deploy budget</button>
+          <span class="muted" style="font-size:12px">Brand agent will negotiate with every eligible creator agent in parallel.</span>
+        </div>
+      </div>
+      <div class="card" id="mandate"><div class="muted">The brand agent translates the brief into a structured, machine-checkable mandate before any negotiation starts.</div></div>
+    </div>
+  </section>
+
+  <section id="s2" class="step hidden">
+    <h2><span class="n">2</span> Creator agents respond <span class="status muted" id="st2"></span></h2>
+    <div class="grid4" id="creators"></div>
+  </section>
+
+  <section id="s3" class="step hidden">
+    <h2><span class="n">3</span> Negotiation (parallel, structured offers, LTK referee) <span class="status muted" id="st3"></span></h2>
+    <div class="grid4" id="threads"></div>
+  </section>
+
+  <section id="s4" class="step hidden">
+    <h2><span class="n">4</span> Settlement <span class="status muted" id="st4"></span></h2>
+    <div class="totals" id="settleTotals"></div>
+    <div class="grid3" id="deals"></div>
+  </section>
+
+  <section id="s5" class="step hidden">
+    <h2><span class="n">5</span> Execution — content bank first, humans only when it pays <span class="status muted" id="st5"></span></h2>
+    <div class="grid3" id="exec"></div>
+  </section>
+
+  <section id="s6" class="step hidden">
+    <h2><span class="n">6</span> Money — flat fees plus micro-transactions as attribution lands <span class="status muted" id="st6"></span></h2>
+    <div class="totals" id="ledgerTotals"></div>
+    <div class="ledger-wrap">
+      <div class="card"><div class="muted" style="font-size:12px;margin-bottom:6px">Live attribution events (each click carries a signed influence credential; commission settles per order)</div><div class="feed" id="feed"></div></div>
+      <div class="card" id="perCreator"></div>
+    </div>
+  </section>
+
+  <footer>
+    <b>Design notes (why the simulation behaves this way)</b>
+    <ul>
+      <li>Offers are typed objects validated by an LTK referee against each creator's floor before anything settles. Weak negotiators accept money-losing contracts ~19% of the time without this guardrail (Liang & Xu 2026).</li>
+      <li>One brand agent negotiates with all creator agents in parallel. More counterparties produce faster, better deals (AgenticPay 2026). The buyer side is structurally weaker, so the brand agent follows an explicit allocation strategy, not a single chat.</li>
+      <li>Both sides run the same negotiation policy and configured patience. Provider identity and prompted patience, not raw capability, decide who captures surplus (Liang & Xu 2026).</li>
+      <li>Creator agents source from the content bank first and ask the human only when fee + projected commission beats the creator's time at their hourly floor.</li>
+      <li>Every click mints an attribution credential so commission is credited even if a personal agent, not a human, completes the purchase (South et al. 2025; Poppy 0.3).</li>
+    </ul>
+  </footer>
+</main>
+
+<aside id="creatorView" class="hidden">
+  <div>
+    <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
+      <span class="muted">Phone of</span>
+      <select id="phoneWho"></select>
+    </div>
+    <div class="phone"><div class="notch"></div><div class="screen">
+      <div class="time" id="phTime">9:41</div><div class="date">Friday, November 6</div>
+      <div id="phFeed"></div>
+    </div></div>
+  </div>
+  <div class="cv-side">
+    <div class="card">
+      <div class="earn"><div><div class="muted" style="font-size:12px">Earned this campaign (agent-run, no LTK login)</div><div class="big num" id="cvEarned">$0.00</div></div>
+      <div style="text-align:right"><div class="muted" style="font-size:12px">Human minutes spent</div><div class="big num" id="cvMinutes">0</div></div></div>
+    </div>
+    <div class="card"><div class="muted" style="font-size:12px;margin-bottom:6px">What your agent did for you</div><ul class="items" id="cvLog"></ul></div>
+    <div class="card"><div class="muted" style="font-size:12px;margin-bottom:6px">Agent policy (you set this once)</div>
+      <div class="kv" id="cvPolicy"></div></div>
+  </div>
+</aside>
+
+<script>
+// ---------- utilities ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let rng=mulberry32(7);
+const $=s=>document.querySelector(s);
+const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e};
+const usd=n=>'$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const usd0=n=>'$'+Math.round(n).toLocaleString('en-US');
+const pct=n=>(n*100).toFixed(0)+'%';
+const k=n=>n>=1000?(n/1000).toFixed(n>=100000?0:1)+'K':String(n);
+let SPEED=1;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms*SPEED));
+const params=new URLSearchParams(location.search);
+
+// ---------- world ----------
+const TYPES={
+  ig_post:{label:'Instagram post',short:'IG post',hours:1.5,reach:0.55,click:0.18},
+  tt_story:{label:'TikTok story',short:'TT story',hours:0.4,reach:0.22,click:0.18},
+  reel:{label:'Reel',short:'Reel',hours:2.5,reach:0.90,click:0.18},
+};
+const AOV=142, COMM=0.12, PATIENCE=0.72; // same policy & patience on both sides
+const CREATORS=[
+  {id:'A',handle:'@juniper.lane',name:'Juniper Lane',followers:128000,eng:0.034,affinity:0.82,priorOrders:412,priorGmv:58400,color:'#f59e0b',
+   floors:{ig_post:180,tt_story:45,reel:260},bank:{ig_post:[{id:'IG-0921',note:'Chelsea boot, Sep 14 shoot'},{id:'IG-1002',note:'Fall layering, Oct 2'},{id:'IG-1011',note:'Rainy-day fit, Oct 11'}],tt_story:[{id:'TT-0922'},{id:'TT-0930'},{id:'TT-1003'},{id:'TT-1012'}],reel:[]},hourly:180,policy:'No same-category exclusivity. Min $45/story. Don\'t ping me for work under $150 net.'},
+  {id:'B',handle:'@theo.wears',name:'Theo Okafor',followers:41000,eng:0.071,affinity:0.91,priorOrders:230,priorGmv:31900,color:'#34d399',
+   floors:{ig_post:120,tt_story:30,reel:220},bank:{ig_post:[{id:'IG-0915',note:'Marlowe unboxing, Sep 15'}],tt_story:[{id:'TT-1001'}],reel:[]},hourly:120,policy:'Reels only if net > $200. Happy to trade flat fee for commission uplift.'},
+  {id:'C',handle:'@maren.home',name:'Maren Castillo',followers:265000,eng:0.018,affinity:0.22,priorOrders:41,priorGmv:5200,color:'#c084fc',
+   floors:{ig_post:350,tt_story:90,reel:600},bank:{ig_post:[{id:'IG-0901',note:'Home tour, boots in frame'}],tt_story:[],reel:[]},hourly:300,policy:'Home/lifestyle only. Premium rates, no commission trades.'},
+  {id:'D',handle:'@sofi.styles',name:'Sofia Reyes',followers:19000,eng:0.092,affinity:0.64,priorOrders:88,priorGmv:11800,color:'#7c9cff',
+   floors:{ig_post:70,tt_story:20,reel:140},bank:{ig_post:[{id:'IG-1005',note:'Thrift + Marlowe mix, Oct 5'},{id:'IG-1019',note:'Campus fit, Oct 19'}],tt_story:[{id:'TT-1006'},{id:'TT-1013'},{id:'TT-1020'}],reel:[{id:'RL-1014',note:'Boot try-on, Oct 14'}]},hourly:60,policy:'Say yes to anything above my floors; I\'m building my book.'},
+];
+const BRAND={name:'Marlowe Boot Co.'};
+
+function projClicks(c,type){const t=TYPES[type];return c.followers*t.reach*c.eng*t.click}
+function projOrders(c,type){return projClicks(c,type)*0.02*(0.5+c.affinity)}
+function projComm(c,type,uplift=0){return projOrders(c,type)*AOV*(COMM+uplift)}
+
+// ---------- state ----------
+let S=null;
+function freshState(){
+  rng=mulberry32(7);
+  return {budget:0,mandate:null,alloc:{},deals:[],walked:[],ledger:{spend:0,gmv:0,orders:0,clicks:0,creds:0,comm:0},per:{},phone:{},cv:{},running:false};
+}
+
+// ---------- step 1: mandate ----------
+function parseBrief(text,budget){
+  const t=text.toLowerCase();
+  const m={
+    budget,
+    audience:/women/.test(t)?'Women 25–40':'General',
+    affinityWeight:/already sold|prefer creators who/.test(t)?0.8:0.4,
+    channels:[/instagram/.test(t)?'instagram':null,/tiktok/.test(t)?'tiktok':null].filter(Boolean),
+    requireReel:/reel/.test(t),
+    deadlineDays:(t.match(/(\d+)\s*days?/)||[])[1]?parseInt(t.match(/(\d+)\s*days?/)[1]):14,
+    maxShare:0.6,
+    walkIfCPO:95, // walk if cost per projected order exceeds this
+    approvalAbove:0.75*budget,
+  };
+  return m;
+}
+function renderMandate(m){
+  $('#mandate').innerHTML=`
+    <div class="pill brand">brand agent</div><span class="muted" style="font-size:12px">structured mandate v1 · model: same policy both sides</span>
+    <div class="offer">{
+  "budget_usd": ${m.budget},
+  "audience": "${m.audience}",
+  "affinity_weight": ${m.affinityWeight},
+  "channels": ${JSON.stringify(m.channels)},
+  "require_reel": ${m.requireReel},
+  "deadline_days": ${m.deadlineDays},
+  "max_share_per_creator": ${m.maxShare},
+  "walk_if_cost_per_projected_order_gt": ${m.walkIfCPO},
+  "human_approval_if_single_deal_gt": ${Math.round(m.approvalAbove)},
+  "settlement": "LTK escrow, flat on go-live, commission per attributed order"
+}</div>`;
+}
+
+// ---------- step 2: creator agents ----------
+function creatorCard(c){
+  const d=el('div','card');d.id='cc-'+c.id;
+  const bank=Object.entries(c.bank).reduce((n,[,v])=>n+v.length,0);
+  d.innerHTML=`
+    <div class="creator-head"><span class="avatar" style="background:${c.color}">${c.name.split(' ').map(x=>x[0]).join('')}</span>
+      <div><div class="h">${c.handle} <span class="pill ok">agent online</span></div><div class="s">${k(c.followers)} followers · ${pct(c.eng)} eng</div></div></div>
+    <div class="muted" style="font-size:12px">Brand affinity (prior Marlowe orders)</div>
+    <div class="bar"><i style="width:${c.affinity*100}%;background:${c.color}"></i></div>
+    <div class="stat"><span>${c.priorOrders} orders · ${usd0(c.priorGmv)} GMV</span><b>${pct(c.affinity)}</b></div>
+    <div class="stat"><span>Content bank (Marlowe-relevant)</span><b>${bank} assets</b></div>
+    <div class="stat"><span>Hourly floor for new content</span><b>${usd0(c.hourly)}/h</b></div>
+    <div id="prop-${c.id}" style="margin-top:10px"><span class="muted" style="font-size:12px">thinking…</span></div>`;
+  return d;
+}
+
+// creator agent builds a package aimed at a target spend
+function buildPackage(c,target,m){
+  const cands=[];
+  for(const type of Object.keys(TYPES)){
+    if(type!=='reel' && !m.channels.includes(type==='ig_post'?'instagram':'tiktok')) continue;
+    c.bank[type].forEach(a=>cands.push({type,src:'bank',asset:a,ask:c.floors[type]*1.35,floor:c.floors[type],comm:projComm(c,type)}));
+    // new content: only if it pays vs the creator's time (one candidate per allowed slot)
+    const net=c.floors[type]*1.35+projComm(c,type)-c.hourly*TYPES[type].hours;
+    if(net>0) for(let i=0;i<3;i++) cands.push({type,src:'new',ask:c.floors[type]*1.35,floor:c.floors[type],comm:projComm(c,type),hours:TYPES[type].hours,net});
+  }
+  // value per ask dollar; bank first
+  cands.sort((x,y)=>(y.src==='bank')-(x.src==='bank')||(y.comm/y.ask)-(x.comm/x.ask));
+  // size the package so its FLOOR fits the brand's allocation; the ask is anchored above, the package is not
+  const pack=[];let floor=0;const caps={ig_post:2,tt_story:3,reel:1};const cnt={ig_post:0,tt_story:0,reel:0};
+  const add=it=>{pack.push(it);cnt[it.type]++;floor+=it.floor};
+  if(m.requireReel){const r=cands.find(x=>x.type==='reel');if(r&&r.floor<=target*0.7)add(r)}
+  for(const it of cands){
+    if(pack.includes(it))continue;
+    if(cnt[it.type]>=caps[it.type])continue;
+    if(floor+it.floor>target&&pack.length>0)continue;
+    add(it);
+  }
+  return pack;
+}
+const sumBy=(arr,f)=>arr.reduce((n,x)=>n+f(x),0);
+function describe(pack){
+  const g={};pack.forEach(p=>{g[p.type]=(g[p.type]||0)+1});
+  const plural={ig_post:'IG posts',tt_story:'TT stories',reel:'Reels'};
+  return Object.entries(g).map(([t,n])=>`${n} ${n>1?plural[t]:TYPES[t].short}`).join(', ')||'nothing';
+}
+const channelOf=t=>t==='ig_post'?'instagram':t==='tt_story'?'tiktok':'reel';
+// pick the item the brand agent proposes to drop: never the last item of a required channel/reel if anything else can go
+function weakestItem(pack,m){
+  const count={};pack.forEach(p=>{count[channelOf(p.type)]=(count[channelOf(p.type)]||0)+1});
+  const protectedItem=p=>{const ch=channelOf(p.type);const req=ch==='reel'?m.requireReel:m.channels.includes(ch);return req&&count[ch]===1};
+  return [...pack].sort((x,y)=>(protectedItem(x)-protectedItem(y))||(x.comm/x.ask)-(y.comm/y.ask))[0];
+}
+function proposalHTML(c,pack,ask){
+  const bank=pack.filter(p=>p.src==='bank').length,nw=pack.length-bank;
+  return `<div style="font-size:12.5px"><b>Opening package:</b> ${describe(pack)} for <b>${usd0(ask)}</b> flat + standard ${pct(COMM)} commission</div>
+  <ul class="items">${pack.map(p=>`<li><span>${TYPES[p.type].label}${p.asset?` <span class="muted">· ${p.asset.id}</span>`:''}</span><span><span class="tag ${p.src}">${p.src==='bank'?'from bank':'needs human'}</span> ${usd0(p.ask)}</span></li>`).join('')}</ul>
+  <div class="muted" style="font-size:11.5px;margin-top:6px">${bank} asset${bank!==1?'s':''} from bank, ${nw} new. Projected commission on this package: ${usd0(sumBy(pack,p=>p.comm))}.</div>`;
+}
+
+// ---------- step 3: negotiation ----------
+function threadCard(c){
+  const d=el('div','card');d.id='th-'+c.id;
+  d.innerHTML=`<div class="creator-head"><span class="avatar" style="background:${c.color}">${c.name.split(' ').map(x=>x[0]).join('')}</span><div><div class="h">${c.handle}</div><div class="s">allocation target ${usd0(S.alloc[c.id])}</div></div></div><div class="thread" id="tr-${c.id}"></div>`;
+  return d;
+}
+function offerObj(o){return `{ flat: ${Math.round(o.flat)}, uplift_pts: ${(o.uplift*100).toFixed(0)}, items: ${o.items.length}, exclusivity: "none", go_live_by: "day ${o.day||10}" }`}
+async function say(c,kind,who,text,offer,extra){
+  const t=$('#tr-'+c.id);
+  const m=el('div','msg '+kind);
+  m.innerHTML=`<div class="who"><b>${who}</b>${extra||''}</div>${text}${offer?`<div class="offer">${offerObj(offer)}</div>`:''}`;
+  t.appendChild(m);m.scrollIntoView({block:'nearest'});
+  await sleep(kind==='ref'?500:900);
+}
+async function negotiate(c){
+  const m=S.mandate;const target=S.alloc[c.id];
+  let pack=buildPackage(c,target,m);
+  if(pack.length===0){S.walked.push({c,why:'no eligible deliverables'});return null}
+  let ask=sumBy(pack,p=>p.ask);
+  let floorSum=()=>sumBy(pack,p=>p.floor);
+  let commProj=()=>sumBy(pack,p=>p.comm);
+  let uplift=0;
+  $('#prop-'+c.id).innerHTML=proposalHTML(c,pack,ask);
+  await sleep(400);
+
+  await say(c,'creator',c.handle+' agent',`Proposing ${describe(pack)}. ${pack.filter(p=>p.src==='bank').length} of ${pack.length} come straight from the bank, so I can go live in 48h. Affinity ${pct(c.affinity)} with Marlowe; projected ${usd0(commProj())} commission tells you this audience converts.`,{flat:ask,uplift,items:pack});
+
+  const cap=target*1.05; // brand agent may stretch 5% over allocation to clear a floor
+  let brandOffer=Math.min(target,ask*0.72);
+
+  // ---- fit phase: referee blocks sub-floor offers; brand trims the package until it fits, or walks ----
+  let trims=0;
+  while(brandOffer<floorSum()){
+    await say(c,'ref block','LTK referee',`Blocked: brand offer ${usd0(brandOffer)} is below the creator's verified floor ${usd0(floorSum())} for this package. Offers below floor never reach the creator agent.`,null);
+    if(floorSum()<=cap){brandOffer=floorSum();break}
+    const cpoFloor=floorSum()/sumBy(pack,p=>projOrders(c,p.type));
+    if(pack.length<=1||trims>=2||cpoFloor>m.walkIfCPO){
+      await say(c,'brand','brand agent',`Walking away. ${pack.length<=1?`Even a single ${TYPES[pack[0].type].label.toLowerCase()} floors at ${usd0(floorSum())} against my ${usd0(target)} allocation`:`Can't get this package under my ${usd0(target)} allocation without gutting it`}; cost per projected order at floor is ${usd0(cpoFloor)} and affinity with Marlowe is ${pct(c.affinity)}. Rates logged; I'll re-engage if the next brief fits.`,null,'<span class="pill bad">declined</span>');
+      $('#th-'+c.id).classList.add('walk');$('#cc-'+c.id).classList.add('walk');
+      S.walked.push({c,why:`floor ${usd0(floorSum())} > allocation ${usd0(target)} · affinity ${pct(c.affinity)}`});
+      return null;
+    }
+    const weakest=weakestItem(pack,m);trims++;
+    await say(c,'brand','brand agent',`Can't reach floor inside my allocation. Proposing we drop the ${TYPES[weakest.type].label}${weakest.asset?' ('+weakest.asset.id+')':''} and re-price.`,null);
+    pack=pack.filter(p=>p!==weakest);ask=sumBy(pack,p=>p.ask)*0.95;
+    await say(c,'creator',c.handle+' agent',`Agreed, ${describe(pack)} it is. Re-pricing at ${usd0(ask)}.`,{flat:ask,uplift,items:pack});
+    brandOffer=Math.min(target,Math.max(ask*0.8,floorSum()*0.9));
+  }
+
+  // ---- bargaining rounds ----
+  let round=1;
+  while(round<=6){
+    let note='';
+    if(c.affinity>=0.7&&uplift===0&&round===1){
+      uplift=0.02;brandOffer=Math.max(floorSum(),Math.min(target,brandOffer*0.96));
+      note=` Your history with us converts, so I'd rather pay you in upside: +2 pts commission uplift (${pct(COMM)} → ${pct(COMM+uplift)}) in exchange for a lower flat.`;
+    }
+    const atCap=brandOffer>=cap-0.5;
+    await say(c,'brand','brand agent',round===1
+      ?`Round ${round}: offering ${usd0(brandOffer)} flat.${note} Allocation for you is capped at ${usd0(target)} under a ${pct(m.maxShare)} max-share rule.`
+      :`Round ${round}: ${usd0(brandOffer)} flat.${atCap?' That is my ceiling for this brief; I can\'t move further without breaching the max-share rule.':''}`,{flat:brandOffer,uplift,items:pack});
+
+    // ---- creator move ----
+    const upliftValue=commProj()*(uplift/COMM)*0.6; // creator agent risk-discounts upside vs cash
+    const effective=brandOffer+upliftValue;
+    // concede toward floor using configured patience; credit uplift
+    const newAsk=Math.max(floorSum(),ask-(ask-floorSum())*(1-PATIENCE)-upliftValue*0.6);
+    const ceilingClose=atCap&&newAsk<=brandOffer*1.12; // counterpart can't move; gap is small; take it
+    if(effective>=ask*0.97||newAsk<=brandOffer*1.03||ceilingClose||round===6){
+      await say(c,'creator',c.handle+' agent',`Accepting ${usd0(brandOffer)} flat${uplift?` + ${(uplift*100).toFixed(0)} pt uplift (worth ~${usd0(upliftValue)} to me on projected volume)`:''}. ${ceilingClose?'You\'re at your ceiling and the gap is small; dragging this out costs more than it gains.':`That clears my floor of ${usd0(floorSum())} and I'd rather be live in 48h than haggle over ${usd0(Math.max(0,ask-brandOffer))}.`}`,null,'<span class="pill ok">accepted</span>');
+      break;
+    }
+    ask=newAsk;
+    await say(c,'creator',c.handle+' agent',`Counter at ${usd0(ask)}.${uplift?` I'm crediting the uplift at ~${usd0(upliftValue)}.`:''} Floor on this package is ${usd0(floorSum())} and I won't go under it; ${pack.filter(p=>p.src==='new').length?`the new ${TYPES[pack.find(p=>p.src==='new').type].label.toLowerCase()} costs my human ${TYPES[pack.find(p=>p.src==='new').type].hours}h.`:'everything here is already shot.'}`,{flat:ask,uplift,items:pack});
+    // brand closes 55% of the gap, capped by allocation
+    brandOffer=Math.min(cap,brandOffer+(ask-brandOffer)*0.55);
+    if(brandOffer>=ask*0.97)brandOffer=Math.min(ask,cap);
+    round++;
+  }
+  // referee final verification
+  const ok=brandOffer>=floorSum();
+  await say(c,'ref','LTK referee',`Verified: flat ${usd0(brandOffer)} ≥ floor ${usd0(floorSum())} ✓ · brand share ${pct(brandOffer/m.budget)} ≤ ${pct(m.maxShare)} ✓ · both agents signed · ${pack.length} attribution links minted.`,null,'<span class="pill ok">settled</span>');
+  const deal={id:'DL-'+Math.floor(rng()*0xffff).toString(16).toUpperCase().padStart(4,'0'),c,pack,flat:brandOffer,uplift,rounds:round,floor:floorSum(),comm:commProj()};
+  S.deals.push(deal);
+  const dm=el('div','msg deal');dm.innerHTML=`<div class="who"><b>Deal ${deal.id}</b> · ${deal.rounds} round${deal.rounds>1?'s':''}</div>${describe(pack)} · ${usd0(deal.flat)} flat · ${pct(COMM+uplift)} commission`;
+  $('#tr-'+c.id).appendChild(dm);
+  return deal;
+}
+
+// ---------- step 4: settlement ----------
+function renderSettlement(){
+  const spent=sumBy(S.deals,d=>d.flat);const pool=S.budget-spent;
+  $('#settleTotals').innerHTML=`
+    <div class="card"><div class="lbl">Budget</div><div class="big num">${usd0(S.budget)}</div></div>
+    <div class="card"><div class="lbl">Committed flat fees</div><div class="big num">${usd0(spent)}</div><div class="muted" style="font-size:12px">${S.deals.length} deals · ${S.walked.length} walked</div></div>
+    <div class="card"><div class="lbl">Performance bonus pool</div><div class="big num">${usd0(pool)}</div><div class="muted" style="font-size:12px">unspent budget, released on ROAS</div></div>
+    <div class="card"><div class="lbl">Projected GMV</div><div class="big num">${usd0(sumBy(S.deals,d=>sumBy(d.pack,p=>projOrders(d.c,p.type))*AOV))}</div><div class="muted" style="font-size:12px">from creator agents' own projections</div></div>`;
+  $('#deals').innerHTML='';
+  S.deals.forEach(d=>{
+    const card=el('div','card');
+    card.innerHTML=`<div class="creator-head"><span class="avatar" style="background:${d.c.color}">${d.c.name.split(' ').map(x=>x[0]).join('')}</span><div><div class="h">${d.c.handle} <span class="pill">${d.id}</span></div><div class="s">${describe(d.pack)}</div></div></div>
+      <div class="kv"><b>Flat fee</b><span>${usd0(d.flat)} <span class="muted">(floor ${usd0(d.floor)})</span></span><b>Commission</b><span>${pct(COMM+d.uplift)}${d.uplift?` <span class="pill ok">+${(d.uplift*100).toFixed(0)} pt uplift</span>`:''}</span><b>Escrow</b><span>funded · released per deliverable on go-live</span><b>Attribution</b><span>${d.pack.length} links · creator-credited even if a personal agent checks out</span><b>Signatures</b><span class="mono">brand-agent ✓ · creator-agent ✓ · referee ✓</span></div>`;
+    $('#deals').appendChild(card);
+  });
+  S.walked.forEach(w=>{
+    const card=el('div','card walk');
+    card.innerHTML=`<div class="creator-head"><span class="avatar" style="background:${w.c.color}">${w.c.name.split(' ').map(x=>x[0]).join('')}</span><div><div class="h">${w.c.handle} <span class="pill bad">no deal</span></div><div class="s">${w.why}</div></div></div><div class="muted" style="font-size:12px">Both agents logged the walk-away. The creator agent will re-bid automatically if Marlowe's next brief fits its rates.</div>`;
+    $('#deals').appendChild(card);
+  });
+}
+
+// ---------- step 5: execution ----------
+async function execute(){
+  $('#exec').innerHTML='';
+  let day=1;
+  for(const d of S.deals){
+    const card=el('div','card');card.id='ex-'+d.c.id;
+    card.innerHTML=`<div class="creator-head"><span class="avatar" style="background:${d.c.color}">${d.c.name.split(' ').map(x=>x[0]).join('')}</span><div><div class="h">${d.c.handle}</div><div class="s">${d.id}</div></div></div><ul class="items" id="exl-${d.c.id}"></ul><div class="timeline" id="tl-${d.c.id}">${Array.from({length:10},(_,i)=>`<div class="day" data-d="${i+1}">d${i+1}</div>`).join('')}</div><div id="hm-${d.c.id}"></div>`;
+    $('#exec').appendChild(card);
+  }
+  const feeShare=(d,p)=>d.flat*(p.ask/sumBy(d.pack,x=>x.ask));
+  const mark=(d,p,day)=>{p.day=day;const cell=$(`#tl-${d.c.id} .day[data-d="${Math.min(10,day)}"]`);if(cell){const dot=el('i','dot');dot.style.background=d.c.color;dot.style.opacity=.85;cell.appendChild(dot)}};
+  await Promise.all(S.deals.map(async(d,di)=>{
+    let dayCursor=2+di;
+    const first=d.c.name.split(' ')[0];
+    // bank items first, one at a time
+    for(const p of d.pack.filter(x=>x.src==='bank')){
+      const li=el('li');li.innerHTML=`<span>${TYPES[p.type].label} <span class="muted">· ${p.asset.id}${p.asset.note?' · '+p.asset.note:''}</span></span><span class="st muted">queued</span>`;
+      $('#exl-'+d.c.id).appendChild(li);
+      await sleep(600);
+      li.querySelector('.st').innerHTML=`<span class="tag bank">pulled from bank</span> scheduled d${dayCursor}`;
+      phone(d.c,'LTK Agent',`Scheduled ${TYPES[p.type].label.toLowerCase()} for Marlowe from your ${p.asset.id} asset. ${usd0(feeShare(d,p))} releases on go-live. Nothing needed from you.`);
+      cvLog(d.c,`Pulled ${p.asset.id} from bank → ${TYPES[p.type].label} (d${dayCursor})`,feeShare(d,p));
+      mark(d,p,dayCursor);dayCursor+=1;
+    }
+    // new items: one batched ask per content type
+    const groups={};d.pack.filter(x=>x.src==='new').forEach(p=>{(groups[p.type]=groups[p.type]||[]).push(p)});
+    for(const [type,ps] of Object.entries(groups)){
+      const pluralLabel={ig_post:'Instagram posts',tt_story:'TikTok stories',reel:'reels'}[type];
+      const n=ps.length,label=n>1?`${n} new ${pluralLabel}`:`new ${TYPES[type].label.toLowerCase()}`;
+      const lis=ps.map(()=>{const li=el('li');li.innerHTML=`<span>${TYPES[type].label}</span><span class="st muted">queued</span>`;$('#exl-'+d.c.id).appendChild(li);return li});
+      await sleep(600);
+      const fee=sumBy(ps,p=>feeShare(d,p)),comm=sumBy(ps,p=>projComm(d.c,p.type,d.uplift)),hours=sumBy(ps,p=>p.hours),cost=d.c.hourly*hours,net=fee+comm-cost;
+      lis.forEach(li=>li.querySelector('.st').innerHTML=`<span class="tag new">asking human</span>`);
+      const hm=el('div','human');
+      hm.innerHTML=`<b>Human needed:</b> ${label} for Marlowe (${hours}h total)<div class="ev">fee ${usd0(fee)} + projected commission ${usd0(comm)} − your time ${hours}h × ${usd0(d.c.hourly)} = <b>net ${usd0(net)}</b> → agent recommends ${net>0?'YES':'NO'}</div><div class="resp muted">waiting for ${first}…</div>`;
+      $('#hm-'+d.c.id).appendChild(hm);
+      phone(d.c,'LTK Agent',`Worth your time? Marlowe wants ${label}: ${usd0(fee)} flat + ~${usd0(comm)} commission for ~${Math.round(hours*60)} min. Net ${usd0(net)} vs your ${usd0(d.c.hourly)}/h floor.`,true);
+      await sleep(1600);
+      hm.querySelector('.resp').innerHTML=`<span style="color:var(--ok)">${first} tapped Yes from the lock screen (3 s). Shoot brief, product, and tracked links sent to their phone.</span>`;
+      dayCursor+=2;
+      ps.forEach((p,i)=>{lis[i].querySelector('.st').innerHTML=`<span class="tag new">human: yes</span> scheduled d${dayCursor+i}`;mark(d,p,dayCursor+i)});
+      dayCursor+=n;
+      cvLog(d.c,`You approved ${label} (${Math.round(hours*60)} min)`,fee);
+      S.cv[d.c.id].minutes+=hours*60;
+    }
+  }));
+  // a declined ask from a different brand, to show the filter working
+  const c=S.deals[0]?.c;if(c){phone(c,'LTK Agent',`Declined Harbor Denim's ask on your behalf: $80 for a reel, net −$370 after your time. They were told your floor.`);cvLog(c,'Declined Harbor Denim ($80 reel): below floor',0)}
+}
+
+// ---------- step 6: ledger ----------
+async function runLedger(){
+  const L=S.ledger;const feed=$('#feed');
+  S.deals.forEach(d=>{S.per[d.c.id]={flat:0,comm:0,orders:0,clicks:0}});
+  const items=[];S.deals.forEach(d=>d.pack.forEach(p=>items.push({d,p,remaining:projClicks(d.c,p.type)*(0.85+rng()*0.4),paid:false})));
+  const feeShare=(d,p)=>d.flat*(p.ask/sumBy(d.pack,x=>x.ask));
+  const DAYS=30;
+  function totals(){
+    const roas=L.spend?L.gmv/L.spend:0;
+    $('#ledgerTotals').innerHTML=`
+      <div class="card"><div class="lbl">Brand spend (released)</div><div class="big num">${usd(L.spend)}</div><div class="muted" style="font-size:12px">of ${usd0(S.budget)} budget</div></div>
+      <div class="card"><div class="lbl">Attributed GMV</div><div class="big num">${usd(L.gmv)}</div><div class="muted" style="font-size:12px">${L.orders} orders · ${L.clicks} clicks</div></div>
+      <div class="card"><div class="lbl">ROAS</div><div class="big num">${roas.toFixed(2)}×</div><div class="muted" style="font-size:12px">GMV ÷ flat fees released</div></div>
+      <div class="card"><div class="lbl">Attribution credentials</div><div class="big num">${L.creds}</div><div class="muted" style="font-size:12px">signed, agent-checkout safe</div></div>`;
+    $('#perCreator').innerHTML=`<div class="muted" style="font-size:12px;margin-bottom:6px">Creator earnings (flat + micro-transactions)</div>`+S.deals.map(d=>{const p=S.per[d.c.id];return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between"><span><span class="avatar" style="background:${d.c.color};width:20px;height:20px;font-size:9px">${d.c.name.split(' ').map(x=>x[0]).join('')}</span> ${d.c.handle}</span><b class="num">${usd(p.flat+p.comm)}</b></div><div class="muted num" style="font-size:12px;padding-left:26px">flat ${usd(p.flat)} · commission ${usd(p.comm)} · ${p.orders} orders</div></div>`}).join('')+`<div class="muted" style="font-size:11.5px;margin-top:8px">Micro-transactions settle per order, not per campaign. Creators see money without opening LTK.</div>`;
+    updateCV();
+  }
+  totals();
+  for(let day=1;day<=DAYS;day++){
+    $('#st6').textContent=`day ${day} of ${DAYS}`;
+    for(const it of items){
+      if(day<it.p.day)continue;
+      if(!it.paid){it.paid=true;const f=feeShare(it.d,it.p);L.spend+=f;S.per[it.d.c.id].flat+=f;
+        push(`<span class="f">+${usd(f)} flat · ${it.d.c.handle} · ${TYPES[it.p.type].label} live (${it.d.id})</span>`);
+        phone(it.d.c,'LTK Agent',`${TYPES[it.p.type].label} is live. ${usd(f)} released from Marlowe escrow.`);}
+      const age=day-it.p.day;const share=Math.min(it.remaining,it.remaining*0.45*Math.exp(-age*0.35)+0.5);
+      let clicks=Math.round(share*(0.7+rng()*0.6));if(age>12)clicks=Math.round(clicks*0.3);
+      it.remaining-=clicks;if(clicks<=0)continue;
+      L.clicks+=clicks;L.creds+=clicks;S.per[it.d.c.id].clicks+=clicks;
+      const cvr=0.02*(0.5+it.d.c.affinity);let orders=0;for(let i=0;i<clicks;i++)if(rng()<cvr)orders++;
+      for(let o=0;o<orders;o++){
+        const amt=AOV*(0.55+rng()*1.1);const comm=amt*(COMM+it.d.uplift);
+        L.gmv+=amt;L.orders++;L.comm+=comm;S.per[it.d.c.id].comm+=comm;S.per[it.d.c.id].orders++;
+        const viaAgent=rng()<0.28;
+        if(o<2||rng()<0.25)push(`<span class="c">+${usd(comm)} commission</span> · ${it.d.c.handle} · ${TYPES[it.p.type].short} · order ${usd(amt)} at Marlowe${viaAgent?' · <span class="a">checkout by shopper\'s personal agent, credential verified</span>':''}`);
+        if(rng()<0.12)phone(it.d.c,'LTK Agent',`+${usd(comm)} — someone bought ${usd(amt)} of Marlowe from your ${TYPES[it.p.type].label.toLowerCase()}${viaAgent?' (via their agent)':''}.`);
+      }
+      if(orders===0&&rng()<0.08)push(`<span class="a">${clicks} clicks · ${it.d.c.handle} · ${TYPES[it.p.type].short} · credentials minted, no orders yet</span>`);
+    }
+    totals();
+    await sleep(day<6?550:220);
+  }
+  // bonus pool release
+  const pool=S.budget-sumBy(S.deals,d=>d.flat);
+  if(pool>0&&S.deals.length){
+    const best=S.deals.map(d=>({d,g:S.per[d.c.id].orders})).sort((a,b)=>b.g-a.g)[0].d;
+    L.spend+=pool;S.per[best.c.id].flat+=pool;
+    push(`<span class="f">+${usd(pool)} performance bonus · ${best.c.handle} · released from pool on ROAS</span>`);
+    phone(best.c,'LTK Agent',`Bonus: Marlowe's agent released the ${usd(pool)} performance pool to you for top conversion.`);
+    cvLog(best.c,'Won performance bonus pool',pool);
+    totals();
+  }
+  $('#st6').textContent=`30-day window complete · ${L.orders} orders · ROAS ${(L.gmv/L.spend).toFixed(2)}×`;
+  function push(html){const d=el('div',null,html);feed.prepend(d);while(feed.children.length>60)feed.lastChild.remove()}
+}
+
+// ---------- creator view ----------
+function phone(c,app,text,actions){
+  if(!S.phone[c.id])S.phone[c.id]=[];
+  S.phone[c.id].unshift({app,text,actions,t:Date.now()});
+  if(S.phone[c.id].length>40)S.phone[c.id].pop();
+  if($('#phoneWho').value===c.id)renderPhone();
+}
+function cvLog(c,text,amt){S.cv[c.id].log.unshift({text,amt});updateCV()}
+function renderPhone(){
+  const id=$('#phoneWho').value;const f=$('#phFeed');f.innerHTML='';
+  (S.phone[id]||[]).forEach(n=>{const d=el('div','notif');d.innerHTML=`<div class="app"><b>${n.app}</b><span>now</span></div>${n.text}${n.actions?'<div class="btns"><span class="y">Yes, do it</span><span>Not now</span></div>':''}`;f.appendChild(d)});
+  if(!f.children.length)f.innerHTML='<div class="notif"><div class="app"><b>LTK Agent</b><span>now</span></div>Your agent is online and listening for briefs. You\'ll only hear from it when there\'s money or a decision.</div>';
+  updateCV();
+}
+function updateCV(){
+  const id=$('#phoneWho').value;const c=CREATORS.find(x=>x.id===id);if(!c)return;
+  const p=S.per[id]||{flat:0,comm:0};
+  $('#cvEarned').textContent=usd(p.flat+p.comm);
+  $('#cvMinutes').textContent=Math.round(S.cv[id].minutes);
+  $('#cvLog').innerHTML=S.cv[id].log.map(l=>`<li><span>${l.text}</span><span class="num">${l.amt?usd(l.amt):''}</span></li>`).join('')||'<li><span class="muted">nothing yet</span></li>';
+  $('#cvPolicy').innerHTML=`<b>Floors</b><span>IG post ${usd0(c.floors.ig_post)} · TT story ${usd0(c.floors.tt_story)} · reel ${usd0(c.floors.reel)}</span><b>Time floor</b><span>${usd0(c.hourly)}/hour for new content</span><b>Standing rules</b><span>${c.policy}</span><b>Learns from</b><span>LTK posts & links, IG/TikTok (OAuth), calendar; glasses/ambient via personal agent (Poppy) when available</span>`;
+}
+
+// ---------- orchestration ----------
+function show(id){const s=$(id);s.classList.remove('hidden');requestAnimationFrame(()=>s.classList.add('show'));if(SPEED>0)s.scrollIntoView({behavior:'smooth',block:'start'})}
+async function run(){
+  if(S&&S.running)return;
+  S=freshState();S.running=true;
+  CREATORS.forEach(c=>{S.cv[c.id]={minutes:0,log:[]}});
+  $('#deploy').disabled=true;
+  S.budget=Math.max(200,parseFloat($('#budget').value)||1000);
+  // 1 mandate
+  $('#st1').textContent='parsing brief…';await sleep(700);
+  S.mandate=parseBrief($('#brief').value,S.budget);renderMandate(S.mandate);
+  $('#st1').textContent='mandate signed by brand agent';
+  // allocation
+  const score=c=>c.followers*c.eng*(1-S.mandate.affinityWeight+S.mandate.affinityWeight*2*c.affinity);
+  const tot=sumBy(CREATORS,score);
+  CREATORS.forEach(c=>{S.alloc[c.id]=Math.min(S.mandate.maxShare*S.budget,S.budget*score(c)/tot)});
+  // 2 creators
+  await sleep(500);show('#s2');$('#st2').textContent='broadcasting mandate to 4 eligible creator agents…';
+  $('#creators').innerHTML='';CREATORS.forEach(c=>$('#creators').appendChild(creatorCard(c)));
+  await sleep(1200);$('#st2').textContent='4 agents responded with packages';
+  // 3 negotiate in parallel
+  show('#s3');$('#st3').textContent='negotiating in parallel…';
+  $('#threads').innerHTML='';CREATORS.forEach(c=>$('#threads').appendChild(threadCard(c)));
+  await Promise.all(CREATORS.map(negotiate));
+  $('#st3').textContent=`${S.deals.length} settled · ${S.walked.length} walked · max ${Math.max(...S.deals.map(d=>d.rounds),0)} rounds`;
+  // 4 settle
+  await sleep(600);show('#s4');renderSettlement();$('#st4').textContent='escrow funded';
+  // 5 execute
+  await sleep(800);show('#s5');$('#st5').textContent='creator agents scheduling…';
+  await execute();$('#st5').textContent='all deliverables scheduled';
+  // 6 ledger
+  await sleep(800);show('#s6');await runLedger();
+  S.running=false;$('#deploy').disabled=false;
+}
+function resetAll(){
+  ['#s2','#s3','#s4','#s5','#s6'].forEach(id=>{const s=$(id);s.classList.add('hidden');s.classList.remove('show')});
+  $('#mandate').innerHTML='<div class="muted">The brand agent translates the brief into a structured, machine-checkable mandate before any negotiation starts.</div>';
+  ['#st1','#st2','#st3','#st4','#st5','#st6'].forEach(id=>$(id).textContent='');$('#st1').textContent='Brand agent idle';
+  $('#feed').innerHTML='';$('#ledgerTotals').innerHTML='';$('#perCreator').innerHTML='';
+  S=freshState();CREATORS.forEach(c=>{S.cv[c.id]={minutes:0,log:[]}});
+  $('#deploy').disabled=false;renderPhone();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// wiring
+$('#deploy').addEventListener('click',run);
+$('#reset').addEventListener('click',resetAll);
+$('#speed').addEventListener('change',e=>SPEED=parseFloat(e.target.value));
+$('#vBrand').addEventListener('click',()=>{$('#vBrand').classList.add('on');$('#vCreator').classList.remove('on');$('#brandView').style.display='';$('#creatorView').classList.add('hidden')});
+$('#vCreator').addEventListener('click',()=>{$('#vCreator').classList.add('on');$('#vBrand').classList.remove('on');$('#brandView').style.display='none';$('#creatorView').classList.remove('hidden');renderPhone()});
+CREATORS.forEach(c=>{const o=el('option',null,c.handle+' · '+c.name);o.value=c.id;$('#phoneWho').appendChild(o)});
+$('#phoneWho').addEventListener('change',renderPhone);
+S=freshState();CREATORS.forEach(c=>{S.cv[c.id]={minutes:0,log:[]}});renderPhone();
+if(params.get('speed')!=null){SPEED=parseFloat(params.get('speed'));$('#speed').value=String(SPEED)}
+if(params.get('budget'))$('#budget').value=params.get('budget');
+if(params.get('autorun'))run().then(()=>{if(params.get('view')==='creator')$('#vCreator').click()});
+</script>
+</body>
+</html>
