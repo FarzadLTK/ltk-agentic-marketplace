@@ -2,7 +2,9 @@
 
 A single-file, fully simulated prototype of **agent-to-agent creator commerce**: a brand deploys a budget, creator agents respond with packages, the agents negotiate under an LTK referee, settle, execute from each creator's content bank (asking the human only when it pays), and money arrives as flat fees plus per-order micro-transactions.
 
-Everything is fake: creators, content, clicks, orders, dollars. There is no backend, no network call, no login. Open `index.html` in a browser.
+NOTES! 
+1. Everything is fake intentionally for this prototype : creators, content, clicks, orders, dollars. There is no backend, no network call, no login. Open `index.html` in a browser.
+2. This is buildable with real data.
 
 ![Negotiation and settlement](docs/screenshots/negotiation-settlement.png)
 
