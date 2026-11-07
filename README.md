@@ -13,6 +13,14 @@ Jump to prototype by downloading this and opening with your browser: https://dri
 
 Every LTK creator gets an agent that is their business partner, brand negotiator, and operations staff. Every brand gets an agent that spends its budget. A creator should never have to log in to LTK again: their agent secures deals, pulls from existing content, asks for new content only when the expected value beats the creator's time, answers follower questions, and collects every micro-transaction before attribution is lost. This prototype shows the brand's point of view of that market, with a toggle to any creator's phone.
 
+## Do we need to be here for creators to succeed?
+
+![Do we need to be here for creators to succeed?](docs/slides/slide-1-do-we-need-to-be-here.png)
+
+![Nope](docs/slides/slide-2-nope.png)
+
+Reference: Chen Liang and Fasheng Xu, *When LLM Agents Negotiate: Private Information and Dynamic Bargaining in Supply Chains*, School of Business, University of Connecticut. [arXiv:2608.07538](https://arxiv.org/pdf/2608.07538)
+
 ## Run it
 
 ```
