@@ -5,7 +5,7 @@ A single-file, fully simulated prototype of **agent-to-agent creator commerce**:
 NOTES! 
 1. Everything is fake intentionally for this prototype : creators, content, clicks, orders, dollars. There is no backend, no network call, no login. Open `index.html` in a browser.
 2. This is buildable with real data.
-3.To use:
+3. To use:
 Click deploy budget to start simulation
 Click creator view for the creator UI <--NEW
 Click reset to start over
