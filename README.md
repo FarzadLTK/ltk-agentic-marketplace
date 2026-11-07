@@ -1,4 +1,4 @@
-# LTK Agent Market — simulated prototype
+# LTK Agentic Marketplace — simulated prototype
 
 A single-file, fully simulated prototype of **agent-to-agent creator commerce**: a brand deploys a budget, creator agents respond with packages, the agents negotiate under an LTK referee, settle, execute from each creator's content bank (asking the human only when it pays), and money arrives as flat fees plus per-order micro-transactions.
 
@@ -56,6 +56,12 @@ Example demo link: `index.html?autorun=1&speed=0.35`
 
 ![Creator view](docs/screenshots/creator-view.png)
 
+## Architecture
+
+How this would work at LTK. Blue is what exists today, orange is what LTK would build, gray is external. Real system and table names are listed in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+![LTK Agentic Marketplace architecture](docs/architecture.png)
+
 ## What is simulated vs. what the engine does
 
 The negotiation is not a script. It is a small rule-based engine; change the budget or brief and the outcome changes. See [docs/DESIGN.md](docs/DESIGN.md) for the rules, the parameters, and where each rule comes from in the research.
@@ -85,8 +91,10 @@ Full citations in [docs/DESIGN.md](docs/DESIGN.md). A step-by-step talk track is
 ## Layout
 
 ```
-index.html              the whole prototype (HTML, CSS, JS)
-docs/DESIGN.md          engine rules, parameters, research mapping
-docs/DEMO_SCRIPT.md     five-minute walkthrough
-docs/screenshots/       captures from an instant-speed run
+index.html                   the whole prototype (HTML, CSS, JS)
+docs/ARCHITECTURE.md         high-level architecture, real LTK system names, build order
+docs/architecture.png        the diagram (regenerate with docs/architecture_diagram.py)
+docs/DESIGN.md               engine rules, parameters, research mapping
+docs/DEMO_SCRIPT.md          five-minute walkthrough
+docs/screenshots/            captures from an instant-speed run
 ```
